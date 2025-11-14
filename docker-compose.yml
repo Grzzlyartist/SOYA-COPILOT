@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  soya-copilot-api:
+    build: .
+    container_name: soya-copilot-api
+    ports:
+      - "8000:8000"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+      - TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER}
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    command: ["python", "main.py"]
+
+  soya-copilot-frontend:
+    build: .
+    container_name: soya-copilot-frontend
+    ports:
+      - "8501:8501"
+    depends_on:
+      - soya-copilot-api
+    restart: unless-stopped
+    command: ["streamlit", "run", "frontend/streamlit/app.py", "--server.address", "0.0.0.0"]
+
+  soya-copilot-whatsapp:
+    build: .
+    container_name: soya-copilot-whatsapp
+    ports:
+      - "5000:5000"
+    environment:
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+      - TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER}
+    depends_on:
+      - soya-copilot-api
+    restart: unless-stopped
+    command: ["python", "frontend/whatsapp/whatsapp_bot.py"]
+
+volumes:
+  soya_data:
+  soya_logs:
