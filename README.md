@@ -371,3 +371,7 @@ For issues and questions:
 - Check the troubleshooting guides in the documentation
 - Test individual components using provided test scripts
 - Review logs in `logs/app.log`
+
+## APP URL
+- https://soya-copilot-lmbv7rafdh8fi48xxgt2fl.streamlit.app/
+  
